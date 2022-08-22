@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="submit" value ="activate" onclick="activateRoom()">
+    <input type="submit" value="reguser" onclick="reguser()">
+    <script>
+        let data = {
+            user: [
+                { id: 22, name: "Ali", point: 118 },
+                { id: 23, name: "Reza", point: 121 },
+                { id: 24, name: "Hasan", point: 116 },
+                { id: 25, name: "Sasan", point: 1013 },
+                { id: 26, name: "Amir", point: 118 },
+                { id: 27, name: "Sahar", point: 119 },
+                { id: 28, name: "Taghi", point: 134 },
+                { id: 29, name: "Shadi", point: 115 },
+                { id: 30, name: "Freydoun", point: 123 },
+                { id: 31, name: "Parsa", point: 516 }
+            ],
+            room: {
+                id: "wDfew3",
+                name: "Gold",
+                userPoint: 0,
+                winnerId: null,
+                participatedUsers: [],
+                config: { maxUser: 100, minUser: 2, activeStatus: false, enabled: true },
+            }
+        }
+        let room = data.room;//
+        let user = data.user;//
+
+        // admin panel
+        // function to create room in admin dashboard
+        function createRoom() {
+            room = new room({//
+                id: "23$#re",//
+                config: {//
+                    maxUser: null,//
+                    minuser: null,//
+                }//
+            })//
+        }
+
+        function queryRooms() {
+            //query rooms list here even in client and admin views
+        }
+
+        // admin activates privously created room
+        let user_idarr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];//
+        let pointsarr = [1, 2, 3, 4, 5];//
+
+        function activateRoom() {
+
+            Room.startTimer();
+        }
+        
+        function reguser() {
+            const user_id = user_idarr[Math.floor(Math.random() * user_idarr.length)];//
+            const points = pointsarr[Math.floor(Math.random() * pointsarr.length)];//
+            // console.log(user[user_id].name + " " + points + "<br />")//
+
+            Room.register(user_id, points);
+        }
+
+
+
+        function deactivateRoom() {
+            // let par_list = [0, 4, 5, 9, 8, 10];
+            room.config.activeStatus = false;
+            Room.game(room.participatedUsers);
+        }
+
+        let room_participatedUsers = [];
+        const Room = {
+            //room activated on specific time and then deactivated
+
+            register: (user_id, points) => {
+                if (room.config.activeStatus && room.userPoint <= room.config.maxUser) {
+                    //put input user id in the user array. 
+                    // decreament input point from user total points
+                    user[user_id].point -= points;
+                    // and then disable submit btn 
+                    room.userPoint += points;
+                    //+ input point 
+                    room_participatedUsers.push(user_id);
+                    room.participatedUsers = room_participatedUsers;
+                    // console.log(room.participatedUsers)
+                }
+            },
+
+            game: (userslist) => {
+                //select random user from participated users and rerunt it
+                if (userslist.length === 0) {
+                    console.log("no participant");
+                } else if (userslist.length === 1) {
+                    console.log(userslist[0]);
+                } else {
+                    let winner = 0;
+                    winner = Math.floor(Math.random() * userslist.length);
+                    // userslist.map((ul) => console.log(ul + "<br/>"))
+                    console.log("Winner: " + user[winner].name);
+                }
+                console.log(room.participatedUsers)
+            },
+
+            startTimer: () => {
+                room.config.activeStatus = true;
+                //get the time for activated room
+                // setTimeout(deactivateRoom, 2 * 60 * 60 * 1000)
+                setTimeout(deactivateRoom, 5000);
+            }
+
+        }
+
+
+    </script>
+</body>
+
+</html>
