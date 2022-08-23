@@ -9,34 +9,53 @@
 </head>
 
 <body>
-    <input type="submit" value ="activate" onclick="activateRoom()">
-    <input type="submit" value="reguser" onclick="reguser()">
+    <h3>Room number one</h3>
+    <input type="submit" data-id="wDfew3" value="activate" onclick="activateRoom(roomone)">
+    <input type="submit" value="reguser" onclick="reguser(roomone)">
+    <br/>
+    <h3>Room number two</h3>
+    <input type="submit" data-id="wDfew3" value="activate" onclick="activateRoom(roomtwo)">
+    <input type="submit" value="reguser" onclick="reguser(roomtwo)">
     <script>
         let data = {
             user: [
-                { id: 22, name: "Ali", point: 118 },
-                { id: 23, name: "Reza", point: 121 },
-                { id: 24, name: "Hasan", point: 116 },
-                { id: 25, name: "Sasan", point: 1013 },
-                { id: 26, name: "Amir", point: 118 },
-                { id: 27, name: "Sahar", point: 119 },
-                { id: 28, name: "Taghi", point: 134 },
-                { id: 29, name: "Shadi", point: 115 },
+                { id: 22, name: "Ali",      point: 118 },
+                { id: 23, name: "Reza",     point: 121 },
+                { id: 24, name: "Hasan",    point: 116 },
+                { id: 25, name: "Sasan",    point: 101 },
+                { id: 26, name: "Amir",     point: 118 },
+                { id: 27, name: "Sahar",    point: 119 },
+                { id: 28, name: "Taghi",    point: 134 },
+                { id: 29, name: "Shadi",    point: 115 },
                 { id: 30, name: "Freydoun", point: 123 },
-                { id: 31, name: "Parsa", point: 516 }
+                { id: 31, name: "Parsa",    point: 516 }
             ],
-            room: {
-                id: "wDfew3",
-                name: "Gold",
-                userPoint: 0,
-                winnerId: null,
-                participatedUsers: [],
-                config: { maxUser: 100, minUser: 2, activeStatus: false, enabled: true },
-            }
+            room: [
+                {
+                    id: "wDfew3",
+                    name: "Room number one",
+                    roomPoint: 0,
+                    winnerId: null,
+                    participatedUsers: [],
+                    startTime: null,
+                    config: { maxPoint: 100, type: "Gold", duration: 10, activeStatus: false , enabled: true },
+                },
+                {
+                    id: "we23re",
+                    name: "room number two",
+                    roomPoint: 0,
+                    winnerId: null,
+                    participatedUsers: [],
+                    startTime: null,
+                    config: { maxPoint: 100, type: "Silver", duration: 10, activeStatus: false , enabled: true },
+                },
+            ]
         }
         let room = data.room;//
         let user = data.user;//
 
+        let roomone = room[0].id;
+        let roomtwo = room[1].id;
         // admin panel
         // function to create room in admin dashboard
         function createRoom() {
@@ -55,48 +74,66 @@
 
         // admin activates privously created room
         let user_idarr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];//
-        let pointsarr = [1, 2, 3, 4, 5];//
+        let pointsarr = [10, 15];//
 
-        function activateRoom() {
-
-            Room.startTimer();
+        function activateRoom(roomid) {
+            let roomcheck = room.findIndex((thisRoom => thisRoom.id == roomid));
+            if (!room[roomcheck].config.activeStatus && room[roomcheck].winnerId === null){
+                Room.startTimer(roomid);
+            } else if (room[roomcheck].winnerId !== null){
+                console.log("This room already has a winner.")
+            } else if (room[roomcheck].config.activeStatus !== false) {
+                console.log("Room is already activated.")
+            } 
         }
-        
-        function reguser() {
-            const user_id = user_idarr[Math.floor(Math.random() * user_idarr.length)];//
+
+        function reguser(roomid) {
+            const user_id = user_idarr[Math.floor(Math.random() * user.length)];//
             const points = pointsarr[Math.floor(Math.random() * pointsarr.length)];//
-            // console.log(user[user_id].name + " " + points + "<br />")//
 
-            Room.register(user_id, points);
+            Room.register(roomid, user[user_id], points);
         }
 
 
 
-        function deactivateRoom() {
-            // let par_list = [0, 4, 5, 9, 8, 10];
-            room.config.activeStatus = false;
-            Room.game(room.participatedUsers);
+        function deactivateRoom(roomid) {
+            let updateRoom = room.findIndex((thisRoom => thisRoom.id == roomid));
+            room[updateRoom].config.activeStatus = false;
+            Room.game(roomid, room[updateRoom].participatedUsers);
         }
 
-        let room_participatedUsers = [];
+        // let room_participatedUsers = [];
         const Room = {
             //room activated on specific time and then deactivated
 
-            register: (user_id, points) => {
-                if (room.config.activeStatus && room.userPoint <= room.config.maxUser) {
+            register: (roomid, user_id, points) => {
+                let reg_idRoom = room.findIndex((thisRoom => thisRoom.id == roomid));
+                if (room[reg_idRoom].config.activeStatus && room[reg_idRoom].roomPoint < room[reg_idRoom].config.maxPoint) {
                     //put input user id in the user array. 
                     // decreament input point from user total points
-                    user[user_id].point -= points;
+                    user_id.point -= points;
                     // and then disable submit btn 
-                    room.userPoint += points;
+                    
                     //+ input point 
-                    room_participatedUsers.push(user_id);
-                    room.participatedUsers = room_participatedUsers;
-                    // console.log(room.participatedUsers)
+                    room[reg_idRoom].roomPoint += points;
+
+                    // participate each user by times of input points
+                    for (i=1; i <= points; i++) {
+                        room[reg_idRoom].participatedUsers.push(user_id.id);
+                    }
+                    // put unique user id's to database
+                    // room[reg_idRoom].participatedUsers = room_participatedUsers.filter((x, i, a) => a.indexOf(x) === i);
+
+                } else if (!room[reg_idRoom].config.activeStatus) {
+                    console.log("Room is deactive.")
+                } else if (room[reg_idRoom].roomPoint = room[reg_idRoom].config.maxPoint) {
+                    console.log("Room is full.")
                 }
             },
 
-            game: (userslist) => {
+            game: (roomid, userslist) => {
+                console.log(userslist);
+                let gameRoom = room.findIndex((room => room.id == roomid));
                 //select random user from participated users and rerunt it
                 if (userslist.length === 0) {
                     console.log("no participant");
@@ -105,17 +142,26 @@
                 } else {
                     let winner = 0;
                     winner = Math.floor(Math.random() * userslist.length);
-                    // userslist.map((ul) => console.log(ul + "<br/>"))
-                    console.log("Winner: " + user[winner].name);
+                    winner = userslist[winner];
+                    console.log("selected from points: " + userslist[winner]);
+
+                    // add winner ID to database
+                    room[gameRoom].winnerId = user[winner].id;
+
+                    console.log("Winner: " + user[winner].name + ", ID: " + winner);
+                    console.log(room[gameRoom])
                 }
-                console.log(room.participatedUsers)
             },
 
-            startTimer: () => {
-                room.config.activeStatus = true;
+            startTimer: (roomid) => {
+                let updateRoom = room.findIndex((room => room.id == roomid));
+                room[updateRoom].config.activeStatus = true;
+                console.log(room[updateRoom]);
                 //get the time for activated room
                 // setTimeout(deactivateRoom, 2 * 60 * 60 * 1000)
-                setTimeout(deactivateRoom, 5000);
+                // room[updateRoom].startTime = Date.now();
+                
+                setTimeout(() => deactivateRoom(roomid), (room[updateRoom].config.duration * 1000));
             }
 
         }
