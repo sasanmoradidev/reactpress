@@ -12,24 +12,32 @@
     <h3>Room number one</h3>
     <input type="submit" data-id="wDfew3" value="activate" onclick="activateRoom(roomone)">
     <input type="submit" value="reguser" onclick="reguser(roomone)">
-    <br/>
+    <h3 id="timer_wDfew3"></h3>
+    <br />
+    <h3>Room number two</h3>
+    <input type="submit" data-id="we23re" value="activate" onclick="activateRoom(roomtwo)">
+    <input type="submit" value="reguser" onclick="reguser(roomtwo)">
+    <h3 id="timer_we23re"></h3>
+    <br />
     <h3>Room number two</h3>
     <input type="submit" data-id="wDfew3" value="activate" onclick="activateRoom(roomtwo)">
     <input type="submit" value="reguser" onclick="reguser(roomtwo)">
+    <h3 id="timer_ju78mg"></h3>
     <script>
         let data = {
             user: [
-                { id: 22, name: "Ali",      point: 118 },
-                { id: 23, name: "Reza",     point: 121 },
-                { id: 24, name: "Hasan",    point: 116 },
-                { id: 25, name: "Sasan",    point: 101 },
-                { id: 26, name: "Amir",     point: 118 },
-                { id: 27, name: "Sahar",    point: 119 },
-                { id: 28, name: "Taghi",    point: 134 },
-                { id: 29, name: "Shadi",    point: 115 },
+                { id: 22, name: "Ali", point: 118 },
+                { id: 23, name: "Reza", point: 121 },
+                { id: 24, name: "Hasan", point: 116 },
+                { id: 25, name: "Sasan", point: 101 },
+                { id: 26, name: "Amir", point: 118 },
+                { id: 27, name: "Sahar", point: 119 },
+                { id: 28, name: "Taghi", point: 134 },
+                { id: 29, name: "Shadi", point: 115 },
                 { id: 30, name: "Freydoun", point: 123 },
-                { id: 31, name: "Parsa",    point: 516 }
+                { id: 31, name: "Parsa", point: 516 }
             ],
+
             room: [
                 {
                     id: "wDfew3",
@@ -37,8 +45,9 @@
                     roomPoint: 0,
                     winnerId: null,
                     participatedUsers: [],
-                    startTime: null,
-                    config: { maxPoint: 100, type: "Gold", duration: 10, activeStatus: false , enabled: true },
+                    startTime: 1661337441930,
+                    expireTime: 1661341041930,
+                    config: { maxPoint: 100, type: "Gold", duration: 3600, activeStatus: true, enabled: true },
                 },
                 {
                     id: "we23re",
@@ -47,7 +56,18 @@
                     winnerId: null,
                     participatedUsers: [],
                     startTime: null,
-                    config: { maxPoint: 100, type: "Silver", duration: 10, activeStatus: false , enabled: true },
+                    expireTime: null,
+                    config: { maxPoint: 100, type: "Silver", duration: 3600, activeStatus: false, enabled: true },
+                },
+                {
+                    id: "ju78mg",
+                    name: "room number two",
+                    roomPoint: 0,
+                    winnerId: null,
+                    participatedUsers: [],
+                    startTime: null,
+                    expireTime: null,
+                    config: { maxPoint: 100, type: "Silver", duration: 10, activeStatus: false, enabled: true },
                 },
             ]
         }
@@ -58,18 +78,24 @@
         let roomtwo = room[1].id;
         // admin panel
         // function to create room in admin dashboard
+
         function createRoom() {
-            room = new room({//
+            let roompush = {//
                 id: "23$#re",//
+                winnerId: null,
                 config: {//
                     maxUser: null,//
                     minuser: null,//
+
                 }//
-            })//
+            }//
+            room.push(roompush);
+            console.log(room[2])
         }
 
         function queryRooms() {
             //query rooms list here even in client and admin views
+
         }
 
         // admin activates privously created room
@@ -78,13 +104,25 @@
 
         function activateRoom(roomid) {
             let roomcheck = room.findIndex((thisRoom => thisRoom.id == roomid));
-            if (!room[roomcheck].config.activeStatus && room[roomcheck].winnerId === null){
-                Room.startTimer(roomid);
-            } else if (room[roomcheck].winnerId !== null){
-                console.log("This room already has a winner.")
-            } else if (room[roomcheck].config.activeStatus !== false) {
-                console.log("Room is already activated.")
-            } 
+
+            if (roomcheck >= 0) { //check if room exist
+                if (!room[roomcheck].config.activeStatus && room[roomcheck].winnerId === null && room[roomcheck].config.enabled) {
+
+                    // Activate room
+                    room[roomcheck].config.activeStatus = true;
+
+                    // Add timer to room
+                    Room.startTimer(roomid);
+                } else if (room[roomcheck].winnerId !== null) {
+                    console.log("This room already has a winner.")
+                } else if (room[roomcheck].config.activeStatus !== false) {
+                    console.log("Room is already activated.")
+                } else if (room[roomcheck].config.enabled !== true) {
+                    console.log("Room is disabled.")
+                }
+            } else {
+                console.log("Room doesn't exist.");
+            }
         }
 
         function reguser(roomid) {
@@ -94,15 +132,14 @@
             Room.register(roomid, user[user_id], points);
         }
 
-
-
         function deactivateRoom(roomid) {
             let updateRoom = room.findIndex((thisRoom => thisRoom.id == roomid));
             room[updateRoom].config.activeStatus = false;
+            room[updateRoom].config.enabled = false;
+
             Room.game(roomid, room[updateRoom].participatedUsers);
         }
 
-        // let room_participatedUsers = [];
         const Room = {
             //room activated on specific time and then deactivated
 
@@ -113,12 +150,12 @@
                     // decreament input point from user total points
                     user_id.point -= points;
                     // and then disable submit btn 
-                    
+
                     //+ input point 
                     room[reg_idRoom].roomPoint += points;
 
                     // participate each user by times of input points
-                    for (i=1; i <= points; i++) {
+                    for (i = 1; i <= points; i++) {
                         room[reg_idRoom].participatedUsers.push(user_id.id);
                     }
                     // put unique user id's to database
@@ -132,7 +169,6 @@
             },
 
             game: (roomid, userslist) => {
-                console.log(userslist);
                 let gameRoom = room.findIndex((room => room.id == roomid));
                 //select random user from participated users and rerunt it
                 if (userslist.length === 0) {
@@ -140,32 +176,112 @@
                 } else if (userslist.length === 1) {
                     console.log(userslist[0]);
                 } else {
-                    let winner = 0;
-                    winner = Math.floor(Math.random() * userslist.length);
-                    winner = userslist[winner];
-                    console.log("selected from points: " + userslist[winner]);
+                    let selectWinner = 0;
+                    //select winer Id by random
+                    selectWinner = Math.floor(Math.random() * userslist.length);
+
+                    //get winner id
+                    winnerId = userslist[selectWinner];
 
                     // add winner ID to database
-                    room[gameRoom].winnerId = user[winner].id;
+                    room[gameRoom].winnerId = winnerId;
 
-                    console.log("Winner: " + user[winner].name + ", ID: " + winner);
-                    console.log(room[gameRoom])
+                    // display name of winner
+                    let winner = user.findIndex((user => user.id == winnerId));
+                    console.log("Winner: " + user[winner].name + ", ID: " + user[winner].id);
+
+                    console.log(room[gameRoom]);
                 }
             },
 
             startTimer: (roomid) => {
                 let updateRoom = room.findIndex((room => room.id == roomid));
-                room[updateRoom].config.activeStatus = true;
+
                 console.log(room[updateRoom]);
+
                 //get the time for activated room
-                // setTimeout(deactivateRoom, 2 * 60 * 60 * 1000)
-                // room[updateRoom].startTime = Date.now();
-                
-                setTimeout(() => deactivateRoom(roomid), (room[updateRoom].config.duration * 1000));
-            }
+                room[updateRoom].startTime = Date.now();
+                room[updateRoom].expireTime = Date.now() + (room[updateRoom].config.duration * 1000);
+
+                // old way of time
+                // setTimeout(() => deactivateRoom(roomid), (room[updateRoom].config.duration * 1000));
+
+                // Set the date we're counting down to
+                var countDownDate = room[updateRoom].expireTime;
+
+                // Update the count down every 1 second
+                var x = setInterval(function () {
+
+                    // Get todays date and time
+                    var now = new Date().getTime();
+
+                    // Find the distance between now an the count down date
+                    var distance = countDownDate - now;
+
+                    // Time calculations for days, hours, minutes and seconds
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    // Display the result in the element with id="demo"
+                    document.getElementById("timer_" + roomid).innerHTML = days + "d " + hours + "h "
+                        + minutes + "m " + seconds + "s ";
+
+                    // If the count down is finished, write some text 
+                    if (distance < 0) {
+                        clearInterval(x);
+                        deactivateRoom(roomid);
+                        document.getElementById("timer_" + roomid).innerHTML = "EXPIRED";
+                    }
+                }, 1000);
+
+            },
+
 
         }
 
+        // function for resume open rooms
+        function callTimer(roomid) {
+            let resumeRoom = room.findIndex((room => room.id == roomid));
+            if (room[resumeRoom].config.activeStatus && room[resumeRoom].winnerId === null && room[resumeRoom].config.enabled) {
+
+                // Set the date we're counting down to
+                var countDownDate = room[resumeRoom].expireTime;
+
+                // Update the count down every 1 second
+                var x = setInterval(function () {
+
+                    // Get todays date and time
+                    var now = new Date().getTime();
+
+                    // Find the distance between now an the count down date
+                    var distance = countDownDate - now;
+
+                    // Time calculations for days, hours, minutes and seconds
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    // Display the result in the element with id="demo"
+                    document.getElementById("timer_" + roomid).innerHTML = days + "d " + hours + "h "
+                        + minutes + "m " + seconds + "s ";
+
+                    // If the count down is finished, write some text 
+                    if (distance < 0) {
+                        clearInterval(x);
+                        deactivateRoom(roomid);
+                        document.getElementById("timer_" + roomid).innerHTML = "EXPIRED";
+                    }
+                }, 1000);
+            }
+
+        }
+        // Resume rooms on load
+        room.map((room) => {
+            callTimer(room.id);
+        });
 
     </script>
 </body>
